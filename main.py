@@ -36,8 +36,8 @@ def create_tables(cur, conn):
 
     # Create ___ table
     cur.execute(
-        "CREATE TABLE IF NOT EXISTS "
-        "() "
+        "CREATE TABLE IF NOT EXISTS temp "
+        "(id INTEGER PRIMARY KEY) "
     )
 
     # Commit changes
