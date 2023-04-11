@@ -24,14 +24,14 @@ def create_tables(cur, conn):
     # Create MTA table
     cur.execute(
         "CREATE TABLE IF NOT EXISTS Mta "
-        "(route_id INTEGER PRIMARY KEY, ) "
+        "(stop_id INTEGER PRIMARY KEY, route_id INTEGER, lat INTEGER, lon INTEGER) "
     )
     
 
     # Create pinball table
     cur.execute(
         "CREATE TABLE IF NOT EXISTS Pinball "
-        "() "
+        "(pinball_id INTEGER PRIMARY KEY, lat INTEGER, lon INTEGER) "
     )
 
     # Create ___ table
@@ -44,6 +44,18 @@ def create_tables(cur, conn):
     conn.commit()
 
 def find_pinball(cur, conn):
+    # Pick a stop
+
+    # Determine how close to the stop to search
+
+    # Set up api
+
+    # Make request to api
+
+    # Retrieve json data
+
+    # Insert into db
+
     pass
 
 def main():
@@ -75,6 +87,8 @@ def main():
 
     # Retrieve pinball information
     find_pinball(cur, conn)
+
+    # Calculate
 
 if __name__ == '__main__':
     main()
