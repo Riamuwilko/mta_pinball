@@ -2,6 +2,7 @@ import sqlite3
 import json
 import os
 import requests
+import matplotlib.pyplot as plt
 
 def load_jsons(url,params):
     response = requests.get(url, params=params)
@@ -13,7 +14,45 @@ def write_json(filename, data):
     with open(filename,"w") as outfile:
         outfile.write(json_object)
 
+def open_database(db_name):
+    path = os.path.dirname(os.path.abspath(__file__))
+    conn = sqlite3.connect(path+'/'+db_name)
+    cur = conn.cursor()
+    return cur, conn
+
+def create_tables(cur, conn):
+    # Create MTA table
+    cur.execute(
+        "CREATE TABLE IF NOT EXISTS Mta "
+        "(route_id INTEGER PRIMARY KEY, ) "
+    )
+    
+
+    # Create pinball table
+    cur.execute(
+        "CREATE TABLE IF NOT EXISTS Pinball "
+        "() "
+    )
+
+    # Create ___ table
+    cur.execute(
+        "CREATE TABLE IF NOT EXISTS "
+        "() "
+    )
+
+    # Commit changes
+    conn.commit()
+
+def find_pinball(cur, conn):
+    pass
+
 def main():
+    # Set up database cursor and connection
+    cur, conn = open_database('pinball.db')
+
+    # Create tables
+    create_tables(cur, conn)
+
     #Setting up to use the api
     api_key = "ac48cdfe-09b7-42f6-95eb-9415ec1ae408"
     route_id = "MTA NYCT_M1"
@@ -33,6 +72,9 @@ def main():
     dir_path = os.path.dirname(os.path.realpath(__file__))
     filename = dir_path + '/' + "bus.json"
     write_json(filename,data_dict)
+
+    # Retrieve pinball information
+    find_pinball(cur, conn)
 
 if __name__ == '__main__':
     main()
