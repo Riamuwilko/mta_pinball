@@ -27,11 +27,16 @@ def create_tables(cur, conn):
         "(stop_id INTEGER PRIMARY KEY, route_id INTEGER, lat INTEGER, lon INTEGER) "
     )
     
+    # Create arcades table
+    cur.execute(
+        "CREATE TABLE IF NOT EXISTS Arcades "
+        "(arcade_id INTEGER PRIMARY KEY, name TEXT, lat INTEGER, lon INTEGER) "
+    )
 
     # Create pinball table
     cur.execute(
         "CREATE TABLE IF NOT EXISTS Pinball "
-        "(pinball_id INTEGER PRIMARY KEY, lat INTEGER, lon INTEGER) "
+        "(machine_id INTEGER PRIMARY KEY, name TEXT, arcade_id INTEGER FOREIGN KEY) "
     )
 
     # Create ___ table
@@ -46,19 +51,48 @@ def create_tables(cur, conn):
 def find_pinball(cur, conn):
     # Pick a stop
 
-    # Determine how close to the stop to search
-
     # Set up api
-    url = "https://pinballmap.com/api/v1/docs/1.0/locations/closest_by_lat_lon.html"
+    url = "https://pinballmap.com/api/v1/locations/closest_by_lat_lon.json"
 
     # Make request to api
-    data = load_jsons(url, {})
+    params = {
+        "lat": "40.733936",
+        "lon": "-73.98972"
+    }
+    response = requests.get(url, params)
 
     # Retrieve json data
-    print(data)
+    data = response.text
+    info = json.loads(data)
+    location = info["location"]
 
-    # Insert into db
+    # Add the arcade location
+    cur.execute(
+        "INSERT OR IGNORE INTO Arcades "
+        "(arcade_id, name, lat, lon) "
+        "VALUES (?, ?, ?, ?) ",
+        (location["id"], location["name"], location["lat"], location["lon"])
+    )
 
+    # Get info about pinball machines
+    # Only get information about the first x machines at each arcade
+    count = 24
+    if len(location["machine_ids"]) < count:
+        count = len(location["machine_ids"])
+    
+    # Insert pinball machine information
+    m_names = location["machine_names"]
+    m_ids = location["machine_ids"]
+    for i in range(count):
+        cur.execute(
+            "INSERT OR IGNORE INTO Pinball "
+            "(machine_id, name, arcade_id) "
+            "VALUES (?, ?, ?) ",
+            (m_ids[i], m_names[i], location["id"])
+        )
+
+
+    conn.commit()
     pass
 
 def main():
@@ -90,8 +124,6 @@ def main():
 
     # Retrieve pinball information
     find_pinball(cur, conn)
-
-    # Calculate
 
 if __name__ == '__main__':
     main()
