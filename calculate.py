@@ -40,14 +40,19 @@ def avg_pinballs_per_route(cur, conn):
 
     # Calculate averages
     with open("average.txt", "w") as f:
+        avgs = []
         for route_id, pinballs in machines.items():
             total = 0
             for pinball in pinballs:
                 total += int(pinball)
             avg = total / len(pinballs)
-
+            avgs.append((route_id, avg))
+        
+        # Sort the averages
+        avgs = sorted(avgs, key=lambda x: x[1])
+        for avg in avgs:
             # Write calculated information
-            f.write(f"{route_id} {avg}")
+            f.write(f"{avg[0]} {avg[1]}")
 
 
 def main():
