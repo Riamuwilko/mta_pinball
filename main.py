@@ -49,10 +49,13 @@ def find_pinball(cur, conn):
     # Determine how close to the stop to search
 
     # Set up api
+    url = "https://pinballmap.com/api/v1/docs/1.0/locations/closest_by_lat_lon.html"
 
     # Make request to api
+    data = load_jsons(url, {})
 
     # Retrieve json data
+    print(data)
 
     # Insert into db
 
