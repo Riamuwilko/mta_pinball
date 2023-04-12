@@ -2,7 +2,7 @@ import sqlite3
 import json
 import os
 import requests
-import matplotlib.pyplot as plt
+import re
 
 def load_jsons(url,params):
     response = requests.get(url, params=params)
@@ -24,7 +24,7 @@ def create_tables(cur, conn):
     # Create MTA table
     cur.execute(
         "CREATE TABLE IF NOT EXISTS Mta "
-        "(stop_id INTEGER PRIMARY KEY, route_id INTEGER, lat INTEGER, lon INTEGER) "
+        "(stop_id INTEGER PRIMARY KEY, route_id INTEGER, lat INTEGER, lon INTEGER, arcade_id INTEGER FOREIGN KEY) "
     )
     
     # Create arcades table
@@ -36,13 +36,7 @@ def create_tables(cur, conn):
     # Create pinball table
     cur.execute(
         "CREATE TABLE IF NOT EXISTS Pinball "
-        "(machine_id INTEGER PRIMARY KEY, name TEXT, arcade_id INTEGER FOREIGN KEY) "
-    )
-
-    # Create ___ table
-    cur.execute(
-        "CREATE TABLE IF NOT EXISTS temp "
-        "(id INTEGER PRIMARY KEY) "
+        "(machine_id INTEGER PRIMARY KEY, name TEXT, year INTEGER, arcade_id INTEGER FOREIGN KEY) "
     )
 
     # Commit changes
@@ -50,14 +44,23 @@ def create_tables(cur, conn):
 
 def find_pinball(cur, conn):
     # Pick a stop
+    cur.execute(
+        "SELECT stop_id, lat, lon "
+        "FROM Mta "
+        "WHERE arcade_id IS NULL "
+    )
+    stop = cur.fetchone()
+    stop_id = stop[0]
+    lat = stop[1]
+    lon = stop[2]
 
     # Set up api
     url = "https://pinballmap.com/api/v1/locations/closest_by_lat_lon.json"
 
     # Make request to api
     params = {
-        "lat": "40.733936",
-        "lon": "-73.98972"
+        "lat": lat,
+        "lon": lon
     }
     response = requests.get(url, params)
 
@@ -74,6 +77,14 @@ def find_pinball(cur, conn):
         (location["id"], location["name"], location["lat"], location["lon"])
     )
 
+    # Update the stop's nearest arcade
+    cur.execute(
+        "UPDATE Mta "
+        "SET arcade_id = ? "
+        "WHERE stop_id = ? ",
+        (location["id"], stop_id)
+    )
+
     # Get info about pinball machines
     # Only get information about the first x machines at each arcade
     count = 24
@@ -84,16 +95,19 @@ def find_pinball(cur, conn):
     m_names = location["machine_names"]
     m_ids = location["machine_ids"]
     for i in range(count):
+        # Grab the year from the name
+        year = re.findall(r", \d{4}\)", m_names[i]).strip(",)")
+
+        # Insert pinball information
         cur.execute(
             "INSERT OR IGNORE INTO Pinball "
-            "(machine_id, name, arcade_id) "
-            "VALUES (?, ?, ?) ",
-            (m_ids[i], m_names[i], location["id"])
+            "(machine_id, name, year, arcade_id) "
+            "VALUES (?, ?, ?, ?) ",
+            (m_ids[i], m_names[i], int(year), location["id"])
         )
 
 
     conn.commit()
-    pass
 
 def main():
     # Set up database cursor and connection
