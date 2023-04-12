@@ -1,5 +1,4 @@
 import os
-import sys
 import matplotlib as plt
 
 # Reads in the lines of a file and returns them as two lists of x and y values
@@ -23,7 +22,7 @@ def create_avg_graph(x, y):
 
 def main():
     # Read in values from calculated file
-    barx, bary = read_values(sys.argv[1])
+    barx, bary = read_values("average.txt")
     # Create bar graph
     create_avg_graph(barx, bary)
     pass
