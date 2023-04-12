@@ -25,7 +25,6 @@ def main():
     barx, bary = read_values("average.txt")
     # Create bar graph
     create_avg_graph(barx, bary)
-    pass
 
 if __name__ == '__main__':
     main()
