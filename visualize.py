@@ -18,6 +18,8 @@ def read_values(filename):
 def create_avg_graph(x, y):
     plt.bar(x, y)
     plt.title("Average Pinball Machines per Route")
+    plt.xlabel("Route IDs")
+    plt.ylabel("Average Number of Pinball Machines")
     plt.show()
 
 def main():

@@ -44,10 +44,25 @@ def create_tables(cur, conn):
 
 def find_pinball(cur, conn):
     # Pick a stop
+    # Find the route with the least arcades
+    cur.execute(
+        "SELECT M.route_id, COUNT(*)"
+        "FROM Pinball P, Mta M "
+        "WHERE P.arcade_id = M.arcade_id "
+        "GROUP BY M.route_id "
+    )
+    machine_count = []
+    for row in cur:
+        machine_count.append((row[0], int(row[1])))
+
+    # Find a stop from the route with the least arcades
+    min_route = sorted(machine_count, key=lambda x:x[1])[0][0]
     cur.execute(
         "SELECT stop_id, lat, lon "
         "FROM Mta "
         "WHERE arcade_id IS NULL "
+        "AND route_id = ? ",
+        (min_route, )
     )
     stop = cur.fetchone()
     stop_id = stop[0]
@@ -109,6 +124,7 @@ def find_pinball(cur, conn):
     conn.commit()
 
 def print_stats(cur, conn):
+    # Count the number of rows in the database
     cur.execute("SELECT COUNT(stop_id) FROM Mta")
     num_stops = cur.fetchone[0]
 
@@ -119,6 +135,8 @@ def print_stats(cur, conn):
     num_machines = cur.fetchone[0]
 
     total = num_arcades + num_machines + num_stops
+
+    # Print relevant 
     print(f"Number of MTA Stops: {num_stops}")
     print(f"Number of Arcades: {num_arcades}")
     print(f"Number of Pinball machines: {num_machines}")
