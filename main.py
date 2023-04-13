@@ -106,8 +106,23 @@ def find_pinball(cur, conn):
             (m_ids[i], m_names[i], int(year), location["id"])
         )
 
-
     conn.commit()
+
+def print_stats(cur, conn):
+    cur.execute("SELECT COUNT(stop_id) FROM Mta")
+    num_stops = cur.fetchone[0]
+
+    cur.execute("SELECT COUNT(arcade_id) FROM Arcades")
+    num_arcades = cur.fetchone[0]
+
+    cur.execute("SELECT COUNT(machine_id) FROM Pinball")
+    num_machines = cur.fetchone[0]
+
+    total = num_arcades + num_machines + num_stops
+    print(f"Number of MTA Stops: {num_stops}")
+    print(f"Number of Arcades: {num_arcades}")
+    print(f"Number of Pinball machines: {num_machines}")
+    print(f"Total rows in database: {total}")
 
 def main():
     # Set up database cursor and connection
@@ -138,6 +153,9 @@ def main():
 
     # Retrieve pinball information
     find_pinball(cur, conn)
+
+    # Print out database information
+    print_stats(cur, conn)
 
 if __name__ == '__main__':
     main()
