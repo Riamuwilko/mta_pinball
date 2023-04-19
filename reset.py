@@ -1,4 +1,5 @@
 import sqlite3
+import os
 
 def open_database(db_name):
     path = os.path.dirname(os.path.abspath(__file__))
