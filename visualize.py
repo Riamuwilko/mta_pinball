@@ -1,5 +1,5 @@
 import os
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import folium
 import pandas as pd
 
@@ -11,19 +11,28 @@ def read_values(filename):
     with open(filename, "r") as f:
         lines = f.readlines()
         for line in lines:
-            line = line.split()
+            line = line.split(",")
             x.append(line[0])
-            y.append(line[1])
+            y.append(float(line[1]))
     return x, y
 
 # Creates a bar graph using a list of x and y values
 def create_avg_graph(x, y):
-    # plt.bar(x, y)
-    # plt.title("Average Pinball Machines per Route")
-    # plt.xlabel("Route IDs")
-    # plt.ylabel("Average Number of Pinball Machines")
-    # plt.show()
-    pass
+    plt.style.use('ggplot')
+    plt.bar(x, y, color=["red", "orange", "yellow", "green", "blue"], edgecolor="white")
+    plt.title("Average Pinball Machines per Route")
+    plt.xlabel("Route IDs")
+    plt.ylabel("Average Number of Pinball Machines")
+    plt.show()
+
+def create_year_graph(x, y):
+    plt.style.use('ggplot')
+    plt.figure(figsize=(20, 3))
+    plt.bar(x, y, align="center", width=0.5)
+    plt.title("Number of Pinball Machines by Year")
+    plt.xlabel("Year")
+    plt.ylabel("Number of Pinball Machines")
+    plt.show()
 
 def plotting_on_map():
     # Read from file
@@ -43,8 +52,10 @@ def plotting_on_map():
 def main():
     # Read in values from calculated file
     barx, bary = read_values("average.txt")
+    yearx, yeary = read_values("years.txt")
     # Create bar graph
     create_avg_graph(barx, bary)
+    create_year_graph(yearx, yeary)
     plotting_on_map()
 
 if __name__ == '__main__':
