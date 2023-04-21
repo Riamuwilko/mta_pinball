@@ -36,7 +36,8 @@ def selecting_route(cur, conn):
         writer = csv.writer(file)
         writer.writerow(['Latitude', 'Longitude'])
         writer.writerows(cur.fetchall())
-    
+        
+    conn.commit()
 
 def avg_pinballs_per_route(cur, conn):
     # # Find the number of routes
