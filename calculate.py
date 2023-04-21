@@ -28,13 +28,13 @@ def selecting_route(cur, conn):
 
     #Grab the lat and lon from the route with the max pinball
     cur.execute(
-        "SELECT lat, lon FROM Mta WHERE route_id = ? "
+        "SELECT stop_id, lat, lon FROM Mta WHERE route_id = ? "
         "ORDER BY stop_id ",
         (max_route,)
     )
     with open('lat_lons.csv', 'w', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow(['Latitude', 'Longitude'])
+        writer.writerow(['Stop_id', 'Latitude', 'Longitude'])
         writer.writerows(cur.fetchall())
         
     conn.commit()

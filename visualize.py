@@ -32,9 +32,9 @@ def plotting_on_map():
     # Create a Folium map 
     m = folium.Map(location=[df['Latitude'][0], df['Longitude'][0]], zoom_start=12)
 
-    # Add markers for each location
+    # Add markers for each location, with bus stop ID as a popup
     for i in range(len(df)):
-        folium.Marker([df['Latitude'][i], df['Longitude'][i]]).add_to(m)
+        folium.Marker([df['Latitude'][i], df['Longitude'][i]], popup=df['Stop_id'][i]).add_to(m)
 
     # Display the map
     m.save('map.html')
