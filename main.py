@@ -17,7 +17,7 @@ def create_tables(cur, conn):
     # Create arcades table
     cur.execute(
         "CREATE TABLE IF NOT EXISTS Arcades "
-        "(arcade_id INTEGER PRIMARY KEY, name TEXT, lat INTEGER, lon INTEGER) "
+        "(arcade_id INTEGER PRIMARY KEY, name TEXT, lat INTEGER, lon INTEGER, number_of_pinball INTEGER) "
     )
 
     # Create MTA table
@@ -249,10 +249,9 @@ def update_mta(cur, conn):
             # Add the arcade location regardless
             cur.execute(
                 "INSERT OR IGNORE INTO Arcades "
-                "(arcade_id, name, lat, lon) "
-                "VALUES (?, ?, ?, ?) ",
-                (location["id"], location["name"],
-                 location["lat"], location["lon"])
+                "(arcade_id, name, lat, lon, number_of_pinball) "
+                "VALUES (?, ?, ?, ?, ?) ",
+                (location["id"], location["name"], location["lat"], location["lon"], location["num_machines"])
             )
 
             # Update the stop's nearest arcade
