@@ -308,63 +308,48 @@ def prefill_pinball(cur, conn):
 
 
 def find_pinball(cur, conn):
-    count = 25
-    cur.execute(
-        "SELECT lat, lon "
-        "FROM Mta "
-    )
-    stops = cur.fetchall()
-    for stop in stops:
-        if count == 0:
-            break 
-        lat = stop[0]
-        lon = stop[1]
-        # Set up api
-        url = "https://pinballmap.com/api/v1/locations/closest_by_lat_lon.json"
-
-        # Make request to api
-        params = {
-            "lat": lat,
-            "lon": lon,
-            "max_distance": 10
-        }
-        response = requests.get(url, params)
-
+    count = 0
+    cur.execute("SELECT arcade_id FROM Arcades")
+    arcades = cur.fetchall()
+    
+    for arcade in arcades:
+        url = "https://pinballmap.com/api/v1/locations/"+str(arcade[0])+"/machine_details.json"
+        response = requests.get(url)
         # Retrieve json data
         data = response.text
         info = json.loads(data)
-        location = info["location"]
-
-        # Check if pinball is already in the table
-        cur.execute(
-            "SELECT machine_id "
-            "FROM Pinball "
-            "WHERE Pinball.machine_id = ? ",
-            (location["id"],)
-        )
-        result = cur.fetchone()
-        if result:
-            count += 0
-        else:
-            # Insert pinball machine information
-            m_names = location["machine_names"]
-            m_ids = location["machine_ids"]
-            num_machine = location["num_machines"]
-            if count - num_machine < 0:
-                break
-            count = count - num_machine
-
-            for i in range(num_machine):
-                # Grab the year from the name
-                year = re.findall(r", \d{4}\)", m_names[i])[0].strip(",)")
-
-                # Insert pinball information
+        machines = info["machines"] 
+        for machine in machines:
+            #Check if machine in table
+            cur.execute(
+                "SELECT machine_id "
+                "FROM Pinball "
+                "WHERE Pinball.machine_id = ? ",
+                (machine["id"],)
+            )
+            result = cur.fetchone()
+            if result: #update with arcade id
                 cur.execute(
-                    "INSERT OR IGNORE INTO Pinball "
-                    "(machine_id, name, year, arcade_id) "
-                    "VALUES (?, ?, ?, ?) ",
-                    (m_ids[i], m_names[i], int(year), location["id"])
+                    "UPDATE Pinball "
+                    "SET arcade_id = ? "
+                    "WHERE machine_id = ?",
+                    (arcade[0], machine["id"])
                 )
+                continue
+            else: #add to table
+                if count < 25:
+                    #insert pinball information
+                    cur.execute(
+                        "INSERT OR IGNORE INTO Pinball "
+                        "(machine_id, name, year, arcade_id) "
+                        "VALUES (?, ?, ?, ?) ",
+                        (machine["id"], machine["name"], machine["year"], arcade[0])
+                    )
+                    count += 1
+                else:
+                    break
+        if count >= 25:
+            break
     conn.commit()
 
 def print_stats(cur, conn):
